@@ -31,7 +31,7 @@ No extension · No API · Zero bans · 100% working as of November 2025
 
 ## Screenshot
 
-![Script in action](https://raw.githubusercontent.com/shayanthn/x-unfollower-2025/main/screenshot.png)
+![Script in action](Capture.JPG)
 
 ## Author
 
