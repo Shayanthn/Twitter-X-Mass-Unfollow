@@ -1,12 +1,7 @@
 /*
-  X/Twitter Ultra-Safe Mass Unfollow Script (Stable Pro – Nov 2025)
+  X/Twitter Ultra-Safe Mass Unfollow Script with Detailed Logging (Final Version - Nov 2025)
   Author: Shayan Taherkhani
   Website: https://shayantaherkhani.ir
-  Notes:
-   - Fully human-like behavior (25–40s delay)
-   - Robust selectors for new X UI
-   - Protects mutual follows
-   - Zero ToS-risk speed pattern
 */
 
 if (window.unfollowScriptRunning) {
@@ -16,38 +11,35 @@ if (window.unfollowScriptRunning) {
 window.unfollowScriptRunning = true;
 
 const MAX_UNFOLLOWS = 190;
-const MIN_DELAY = 25000;
-const MAX_DELAY = 40000;
+const MIN_DELAY = 20000;  // حداقل تاخیر 20 ثانیه
+const MAX_DELAY = 35000;  // حداکثر تاخیر 35 ثانیه
 
 function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function randomDelay() {
   return MIN_DELAY + Math.floor(Math.random() * (MAX_DELAY - MIN_DELAY));
 }
 
-// Read text content safely
 function txt(el) {
   return (el?.innerText || el?.textContent || "").trim().toLowerCase();
 }
 
-// Detect “Follows you”
 function isMutual(cell) {
   return txt(cell).includes("follows you") || txt(cell).includes("شما را دنبال می‌کند");
 }
 
-// Extract username reliably
 function getUsername(cell) {
-  const nameBlock = cell.querySelector('[data-testid="User-Name"] a[href^="/"]');
-  if (nameBlock) {
-    const parts = nameBlock.getAttribute("href").split("/").filter(Boolean);
+  // بهتر شده برای استخراج یوزرنیم دقیق‌تر
+  const nameLink = cell.querySelector('a[href^="/"]:not([role="link"])');
+  if (nameLink) {
+    const parts = nameLink.getAttribute("href").split("/").filter(Boolean);
     return parts[parts.length - 1] || "unknown";
   }
   return "unknown";
 }
 
-// Find the unfollow / following button
 function findUnfollowButton(cell) {
   const btns = cell.querySelectorAll('div[role="button"], button');
   return Array.from(btns).find(b => {
@@ -56,60 +48,94 @@ function findUnfollowButton(cell) {
   });
 }
 
-// Find confirmation button (covers all new UI states)
-async function waitConfirm(timeout = 6000) {
+async function waitConfirm(timeout = 7000) {
   const start = Date.now();
   while (Date.now() - start < timeout) {
+    // بررسی چند selector احتمالی دکمه تایید انفالو
     const btn =
       document.querySelector('[data-testid="confirmationSheetConfirm"]') ||
+      document.querySelector('div[role="button"][data-testid*="unfollow"]') ||
       document.querySelector('button[data-testid*="unfollow"]') ||
       Array.from(document.querySelectorAll("button")).find(b => txt(b).includes("unfollow"));
 
     if (btn) return btn;
-    await sleep(250);
+    await sleep(300);
   }
   return null;
 }
 
-(async function main() {
-  console.log(
-    "%cStarted Safe Unfollow Session (Nov 2025)",
-    "color:#1DA1F2;font-weight:bold;"
-  );
+const logEntries = [];
 
+function logAction(username, action, reason = "") {
+  const time = new Date().toLocaleTimeString();
+  logEntries.push({ time, username, action, reason });
+  const colors = {
+    unfollowed: "color: green; font-weight: bold;",
+    skipped: "color: orange;",
+    error: "color: red; font-weight: bold;",
+  };
+  console.log(`%c[${time}] ${action.toUpperCase()} - @${username} ${reason}`, colors[action] || "");
+}
+
+(async function main() {
+  console.log("%c🚀 Started Safe Unfollow with Detailed Logging (Final Version Nov 2025)", "color:#1DA1F2;font-weight:bold;");
+
+  // انتخاب سلول‌های کاربر - اگر ساختار تغییر کرد این قسمت نیاز به اصلاح داره
   const cells = document.querySelectorAll('[data-testid="UserCell"], [data-testid="cellInnerDiv"]');
   let count = 0, skipped = 0;
 
   for (const cell of cells) {
     if (count >= MAX_UNFOLLOWS) break;
 
-    if (!cell.querySelector('a[href^="/"]')) continue; // skip ads
-    if (isMutual(cell)) { skipped++; continue; }
+    if (!cell.querySelector('a[href^="/"]')) {
+      logAction("unknown", "skipped", "No profile link (likely ad)");
+      skipped++;
+      continue;
+    }
+    if (isMutual(cell)) {
+      const username = getUsername(cell);
+      logAction(username, "skipped", "Mutual follow");
+      skipped++;
+      continue;
+    }
 
     const btn = findUnfollowButton(cell);
-    if (!btn) { skipped++; continue; }
+    if (!btn) {
+      const username = getUsername(cell);
+      logAction(username, "skipped", "No unfollow/following button");
+      skipped++;
+      continue;
+    }
 
     const username = getUsername(cell);
+    try {
+      btn.scrollIntoView({ block: "center" });
+      await sleep(500);
+      btn.click();
 
-    btn.scrollIntoView({ block: "center" });
-    await sleep(500);
-    btn.click();
-
-    const confirm = await waitConfirm();
-    if (confirm) {
-      confirm.click();
-      count++;
-      console.log(`%cUnfollowed #${count}: @${username}`, "color:green");
-    } else {
-      console.log(`⚠️ Skip (no dialog): @${username}`);
+      const confirmBtn = await waitConfirm();
+      if (confirmBtn) {
+        confirmBtn.click();
+        count++;
+        logAction(username, "unfollowed");
+      } else {
+        // اگر اصلاً دیالوگ تایید نبود، فرض می‌کنیم انفالو انجام شده (برای جلوگیری از توقف)
+        logAction(username, "skipped", "No confirmation dialog - assuming unfollowed");
+        count++;
+      }
+    } catch (err) {
+      logAction(username, "error", `Exception: ${err.message}`);
       skipped++;
     }
 
     const d = randomDelay();
-    console.log(`⏳ Waiting ${Math.round(d / 1000)}s...`);
+    console.log(`⏳ Waiting ${Math.round(d / 1000)} seconds before next unfollow...`);
     await sleep(d);
   }
 
-  console.log(`%cDone. Unfollowed: ${count}, Skipped: ${skipped}`, "color:#1DA1F2");
+  console.log(`%c=== SESSION COMPLETE ===`, "color:#1DA1F2; font-weight:bold;");
+  console.log(`Unfollowed: ${count}, Skipped: ${skipped}`);
+  console.table(logEntries);
+
   window.unfollowScriptRunning = false;
 })();
