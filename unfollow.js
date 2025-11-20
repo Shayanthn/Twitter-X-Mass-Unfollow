@@ -31,11 +31,9 @@ function isMutual(cell) {
 }
 
 function getUsername(cell) {
-  // بهتر شده برای استخراج یوزرنیم دقیق‌تر
-  const nameLink = cell.querySelector('a[href^="/"]:not([role="link"])');
-  if (nameLink) {
-    const parts = nameLink.getAttribute("href").split("/").filter(Boolean);
-    return parts[parts.length - 1] || "unknown";
+  const link = cell.querySelector('a[href^="/"][role="link"], a[href^="/"]:not([href*="status"]):not([href*="intent"])');
+  if (link) {
+    return link.getAttribute("href").split("/")[1] || "unknown";
   }
   return "unknown";
 }
