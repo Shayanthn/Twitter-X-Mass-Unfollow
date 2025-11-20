@@ -1,5 +1,5 @@
 /*
-  X/Twitter Ultra-Safe Mass Unfollow Script with Detailed Logging (Final Version - Nov 2025)
+  X/Twitter Ultra-Safe Mass Unfollow Script with Detailed Logging (Nov 2025)
   Author: Shayan Taherkhani
   Website: https://shayantaherkhani.ir
 */
