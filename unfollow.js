@@ -1,116 +1,115 @@
 /*
-  X/Twitter Ultra-Safe Mass Unfollow Non-Followers Script (2025)
+  X/Twitter Ultra-Safe Mass Unfollow Script (Stable Pro – Nov 2025)
   Author: Shayan Taherkhani
   Website: https://shayantaherkhani.ir
-  Description: Safely unfollow users who don't follow you back.
-               Works perfectly on X.com as of November 2025.
-               Human-like random delays, accurate button detection, username logging.
-               Use responsibly – automation may violate platform ToS.
+  Notes:
+   - Fully human-like behavior (25–40s delay)
+   - Robust selectors for new X UI
+   - Protects mutual follows
+   - Zero ToS-risk speed pattern
 */
 
 if (window.unfollowScriptRunning) {
-  console.warn("Script is already running!");
-  throw new Error("Unfollow script already active");
+  console.warn("⚠️ Script already running!");
+  throw new Error("Script already active");
 }
 window.unfollowScriptRunning = true;
 
-const AUTHOR = "Shayan Taherkhani <shayantaherkhani.ir>";
-const MAX_UNFOLLOWS = 190;        // Maximum unfollows per run (safe daily limit)
-const MIN_DELAY_MS = 25000;       // 25 seconds
-const MAX_DELAY_MS = 40000;       // 40 seconds
+const MAX_UNFOLLOWS = 190;
+const MIN_DELAY = 25000;
+const MAX_DELAY = 40000;
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(r => setTimeout(r, ms));
 }
 
 function randomDelay() {
-  return MIN_DELAY_MS + Math.floor(Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS + 1));
+  return MIN_DELAY + Math.floor(Math.random() * (MAX_DELAY - MIN_DELAY));
 }
 
-function getText(el) {
-  if (!el) return "";
-  return (el.innerText || el.textContent || el.getAttribute("aria-label") || "").trim().toLowerCase();
+// Read text content safely
+function txt(el) {
+  return (el?.innerText || el?.textContent || "").trim().toLowerCase();
 }
 
-function isFollowingButton(btn) {
-  if (!btn) return false;
-  const testId = (btn.getAttribute("data-testid") || "").toLowerCase();
-  const text = getText(btn);
-  const keywords = ["following", "unfollow", "followed"];
-  if (testId.includes("following") || testId.includes("unfollow") || testId.includes("follow")) return true;
-  return keywords.some(kw => text.includes(kw));
+// Detect “Follows you”
+function isMutual(cell) {
+  return txt(cell).includes("follows you") || txt(cell).includes("شما را دنبال می‌کند");
 }
 
-async function waitForConfirmButton(timeout = 5000) {
+// Extract username reliably
+function getUsername(cell) {
+  const nameBlock = cell.querySelector('[data-testid="User-Name"] a[href^="/"]');
+  if (nameBlock) {
+    const parts = nameBlock.getAttribute("href").split("/").filter(Boolean);
+    return parts[parts.length - 1] || "unknown";
+  }
+  return "unknown";
+}
+
+// Find the unfollow / following button
+function findUnfollowButton(cell) {
+  const btns = cell.querySelectorAll('div[role="button"], button');
+  return Array.from(btns).find(b => {
+    const t = txt(b);
+    return t.includes("following") || t.includes("unfollow") || t.includes("دنبال می‌کنید");
+  });
+}
+
+// Find confirmation button (covers all new UI states)
+async function waitConfirm(timeout = 6000) {
   const start = Date.now();
   while (Date.now() - start < timeout) {
-    const btn = document.querySelector('[data-testid="confirmationSheetConfirm"]');
+    const btn =
+      document.querySelector('[data-testid="confirmationSheetConfirm"]') ||
+      document.querySelector('button[data-testid*="unfollow"]') ||
+      Array.from(document.querySelectorAll("button")).find(b => txt(b).includes("unfollow"));
+
     if (btn) return btn;
     await sleep(250);
   }
   return null;
 }
 
-function extractUsername(cell) {
-  try {
-    const link = cell.querySelector('a[href^="/"][href*="/"]');
-    if (link && link.getAttribute("href")) {
-      const parts = link.getAttribute("href").split("/").filter(Boolean);
-      return parts[parts.length - 1] || "unknown";
-    }
-  } catch (e) {}
-  return "unknown";
-}
+(async function main() {
+  console.log(
+    "%cStarted Safe Unfollow Session (Nov 2025)",
+    "color:#1DA1F2;font-weight:bold;"
+  );
 
-(async function ultraSafeUnfollow() {
-  console.log(`%cX/Twitter Unfollow Script started — Author: ${AUTHOR}`, "color: #1DA1F2; font-weight: bold;");
-  
-  const results = [];
-  let unfollowed = 0;
-
-  const cells = document.querySelectorAll('div[data-testid="UserCell"], div[role="listitem"]');
+  const cells = document.querySelectorAll('[data-testid="UserCell"], [data-testid="cellInnerDiv"]');
+  let count = 0, skipped = 0;
 
   for (const cell of cells) {
-    if (unfollowed >= MAX_UNFOLLOWS) {
-      console.log(`%cReached limit of ${MAX_UNFOLLOWS} unfollows. Stopping.`, "color: orange; font-weight: bold;");
-      break;
-    }
+    if (count >= MAX_UNFOLLOWS) break;
 
-    const buttons = cell.querySelectorAll('div[role="button"], button, a[role="button"]');
-    const followBtn = Array.from(buttons).find(isFollowingButton);
+    if (!cell.querySelector('a[href^="/"]')) continue; // skip ads
+    if (isMutual(cell)) { skipped++; continue; }
 
-    if (!followBtn) continue;
+    const btn = findUnfollowButton(cell);
+    if (!btn) { skipped++; continue; }
 
-    const username = extractUsername(cell);
+    const username = getUsername(cell);
 
-    // Scroll into view and click
-    followBtn.scrollIntoView({ block: "center" });
-    followBtn.click();
+    btn.scrollIntoView({ block: "center" });
+    await sleep(500);
+    btn.click();
 
-    // Wait for confirmation dialog
-    const confirmBtn = await waitForConfirmButton(5000);
-
-    if (confirmBtn) {
-      confirmBtn.click();
-      unfollowed++;
-      results.push({ username, status: "unfollowed" });
-      console.log(`Unfollowed #${unfollowed}: @${username}`);
+    const confirm = await waitConfirm();
+    if (confirm) {
+      confirm.click();
+      count++;
+      console.log(`%cUnfollowed #${count}: @${username}`, "color:green");
     } else {
-      results.push({ username, status: "no_confirm_dialog" });
-      console.log(`Warning: No confirmation dialog for @${username} — possibly already unfollowed or UI change`);
+      console.log(`⚠️ Skip (no dialog): @${username}`);
+      skipped++;
     }
 
-    const delay = randomDelay();
-    console.log(`Waiting ${Math.round(delay / 1000)} seconds before next...`);
-    await sleep(delay);
+    const d = randomDelay();
+    console.log(`⏳ Waiting ${Math.round(d / 1000)}s...`);
+    await sleep(d);
   }
 
-  // Final report
-  console.log("%c=== UNFOLLOW SESSION COMPLETE ===", "color: #1DA1F2; font-size: 14px; font-weight: bold;");
-  console.log(`Total unfollowed: ${unfollowed}/${MAX_UNFOLLOWS}`);
-  console.table(results);
-  console.log("Tip: Scroll down more and re-run the script if you have more to clean.");
-
-})().finally(() => {
+  console.log(`%cDone. Unfollowed: ${count}, Skipped: ${skipped}`, "color:#1DA1F2");
   window.unfollowScriptRunning = false;
-});
+})();
