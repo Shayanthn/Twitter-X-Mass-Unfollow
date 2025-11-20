@@ -3,7 +3,7 @@
 [![Stars](https://img.shields.io/github/stars/Shayanthn/Twitter-X-Mass-Unfollow?style=social)](https://github.com/Shayanthn/Twitter-X-Mass-Unfollow/stargazers)
 [![Forks](https://img.shields.io/github/forks/Shayanthn/Twitter-X-Mass-Unfollow?style=social)](https://github.com/Shayanthn/Twitter-X-Mass-Unfollow/network/members)
 [![License](https://img.shields.io/github/license/Shayanthn/Twitter-X-Mass-Unfollow)](LICENSE)
-[![Twitter](https://img.shields.io/twitter/follow/shayanthn?style=social)](https://twitter.com/shayanthn)
+[![Twitter](https://img.shields.io/twitter/follow/shayanthn?style=social)](https://twitter.com/tah3rkhani)
 
 **The most accurate & safest console script to mass unfollow non-followers on X.com (Twitter) in 2025**  
 No extension · No API · Zero bans · 100% working as of November 2025
@@ -37,7 +37,7 @@ No extension · No API · Zero bans · 100% working as of November 2025
 
 Shayan Taherkhani  
 Website: https://shayantaherkhani.ir  
-X/Twitter: [@shayanthn](https://twitter.com/tah3rkhani)
+X/Twitter: [@tah3rkhani](https://twitter.com/tah3rkhani)
 
 ## Legal Note
 
