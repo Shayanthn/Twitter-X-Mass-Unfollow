@@ -49,4 +49,12 @@ X.com may change their UI at any time — this script is actively maintained.
 [![Star History Chart](https://api.star-history.com/svg?repos=shayanthn/x-unfollower-2025&type=Date)](https://star-history.com/#shayanthn/x-unfollower-2025)
 
 ---
+<div align="center">
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23ffdd00.svg?logo=buy-me-a-coffee&logoColor=black&style=for-the-badge)](https://buymeacoffee.com/ShayanTaherkhani)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-%23FF5E5B.svg?logo=ko-fi&logoColor=white&style=for-the-badge)](https://ko-fi.com/shayantaherkhani)
+
+</div>
+
+> Support my open-source adventures with a coffee! ☕ Your donation keeps the code flowing.
 ⭐ **If this script saved you hours — please give it a star!** ⭐
