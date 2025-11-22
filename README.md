@@ -55,6 +55,4 @@ X.com may change their UI at any time — this script is actively maintained.
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-%23FF5E5B.svg?logo=ko-fi&logoColor=white&style=for-the-badge)](https://ko-fi.com/shayantaherkhani)
 
 </div>
-
-> Support my open-source adventures with a coffee! ☕ Your donation keeps the code flowing.
 ⭐ **If this script saved you hours — please give it a star!** ⭐
