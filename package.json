@@ -1,0 +1,37 @@
+{
+  "name": "twitter-x-mass-unfollow",
+  "version": "2.0.0",
+  "description": "Ultra-safe mass unfollow script for X/Twitter with floating UI panel",
+  "main": "dist/unfollow.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shayanthn/Twitter-X-Mass-Unfollow.git"
+  },
+  "keywords": [
+    "twitter",
+    "x",
+    "unfollow",
+    "mass-unfollow",
+    "automation",
+    "script"
+  ],
+  "author": "Shayan Taherkhani",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Shayanthn/Twitter-X-Mass-Unfollow/issues"
+  },
+  "homepage": "https://github.com/Shayanthn/Twitter-X-Mass-Unfollow#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  }
+}
